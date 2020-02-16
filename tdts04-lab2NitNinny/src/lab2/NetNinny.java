@@ -53,7 +53,12 @@ public class NetNinny {
 					}
 					System.out.println("host: " + host);
 					System.out.println("port: " + portNumber);
+
+					//send request to web server
 					
+					//handle response form web server
+					
+					//send response to browser
 					
 				}
 				catch(IOException e) {
