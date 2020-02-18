@@ -3,6 +3,8 @@ import java.net.*;
 import java.io.*;
 
 //http://requestbin.net/r/1gtru6d1
+//http://iberianodonataucm.myspecies.info/
+//http://diptera.myspecies.info/
 
 public class NetNinny {
 	final static int BUFFER_SIZE = 65536;
@@ -11,40 +13,33 @@ public class NetNinny {
 	public static void main(String[] args){
 		try {
 			ServerSocket proxy = new ServerSocket(2006);
-			
 			while(true) {
-				Socket socketClient = proxy.accept();
-				proxy_server(socketClient);
-				
+				Socket socketServer = proxy.accept();
+				proxy_server(socketServer);
 			}
-			
-			
 		}
 		catch(IOException e) {
 			System.err.println(e);
 		}
 	}
 	
-	public static void proxy_server(Socket client) {
+	public static void proxy_server(Socket socketServer) {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
 					byte[] requestBuffer = new byte[BUFFER_SIZE];
-					InputStream input = client.getInputStream();
+					
+					InputStream input = socketServer.getInputStream();
 					input.read(requestBuffer);
 					String inputRequest = new String(requestBuffer);
-					System.out.println(inputRequest);
 
-					//get port number and host name
+					//string manip to get port number and host name
 					String[] splittedInput = inputRequest.split("\n");
 
 					String portNumber = PORT;
 					String host = new String();
 					
 					String header = splittedInput[0];
-
-					System.out.println("header:");
-					System.out.println(header);
 					
 					if(header.contains("http")) {
 						String[] test = header.split("/");
@@ -55,18 +50,16 @@ public class NetNinny {
 						String new2 = new1.split("/")[0];
 						host = new2.split(":")[0];
 					}
-					System.out.println("host: " + host);
-					System.out.println("port: " + portNumber);
 
-					//send request to web server
 					
+					//send request to web server
 					Socket socketClient = new Socket(host, Integer.parseInt(portNumber));
 					OutputStream out = socketClient.getOutputStream();
 					out.write(requestBuffer);
+					
 					//handle response from web server
-
 					byte[] responseBuffer = new byte[BUFFER_SIZE];
-
+					
 					InputStream inputWebResponse = socketClient.getInputStream();
 					inputWebResponse.read(responseBuffer);
 					String inputResponse = new String(requestBuffer);
@@ -75,11 +68,15 @@ public class NetNinny {
 					System.out.println(inputResponse);
 					System.out.println("succes!!");
 					
-					//send response to browser
+					//filter
+					filterResponse(inputResponse);
 					
-					OutputStream serverOutputStream = client.getOutputStream();
+					//send response to browser
+					OutputStream serverOutputStream = socketServer.getOutputStream();
 					serverOutputStream.write(responseBuffer);
 					
+					System.out.println("buffer filter lal");
+					System.out.println(responseBuffer);
 					//close everything
 					socketClient.close();
 				}
@@ -88,6 +85,11 @@ public class NetNinny {
 				}
 			}
 		}).start();
-	}	
+	}
+	
+	public static void filterResponse(String response) {
+		
+	}
+	
 	
 }
