@@ -8,8 +8,9 @@ import java.io.*;
 
 public class NetNinny {
 	final static int BUFFER_SIZE = 65536;
-	final static String PORT = "80";
+	final static int PORT = 80;
 	final static String[] blackList = {"odonata"};
+	
 	
 	public static void main(String[] args){
 		try {
@@ -30,21 +31,16 @@ public class NetNinny {
 				try {
 					byte[] requestBuffer = new byte[BUFFER_SIZE];
 					
+					//receive request from browser
 					InputStream input = socketServer.getInputStream();
 					input.read(requestBuffer);
 					String inputRequest = new String(requestBuffer);
 
 					//string manip to get port number and host name
-					String[] splittedInput = inputRequest.split("\n");
-
-					String portNumber = PORT;
-					String host = getHostName(splittedInput[0]);
-
-					System.out.println("host: ");
-					System.out.println(host);
+					String host = getHostName(inputRequest.split("\n")[0]);				
 					
 					//send request to web server
-					Socket socketClient = new Socket(host, Integer.parseInt(portNumber));
+					Socket socketClient = new Socket(host, PORT);
 					OutputStream out = socketClient.getOutputStream();
 					out.write(requestBuffer);
 					
@@ -55,9 +51,8 @@ public class NetNinny {
 					inputWebResponse.read(responseBuffer);
 					String inputResponse = new String(requestBuffer);
 
-					System.out.println("response:");
+					System.out.println("RESPONSE:");
 					System.out.println(inputResponse);
-					System.out.println("succes!!");
 					
 					//filter
 					filterResponse(inputResponse);
