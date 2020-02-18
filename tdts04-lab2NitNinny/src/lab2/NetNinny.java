@@ -9,6 +9,7 @@ import java.io.*;
 public class NetNinny {
 	final static int BUFFER_SIZE = 65536;
 	final static String PORT = "80";
+	final static String[] blackList = {"odonata"};
 	
 	public static void main(String[] args){
 		try {
@@ -37,20 +38,10 @@ public class NetNinny {
 					String[] splittedInput = inputRequest.split("\n");
 
 					String portNumber = PORT;
-					String host = new String();
-					
-					String header = splittedInput[0];
-					
-					if(header.contains("http")) {
-						String[] test = header.split("/");
-						String almostHost = test[2];
-						host = almostHost.split(":")[0];		
-					} else {
-						String new1 = header.split(" ")[1];
-						String new2 = new1.split("/")[0];
-						host = new2.split(":")[0];
-					}
+					String host = getHostName(splittedInput[0]);
 
+					System.out.println("host: ");
+					System.out.println(host);
 					
 					//send request to web server
 					Socket socketClient = new Socket(host, Integer.parseInt(portNumber));
@@ -75,8 +66,6 @@ public class NetNinny {
 					OutputStream serverOutputStream = socketServer.getOutputStream();
 					serverOutputStream.write(responseBuffer);
 					
-					System.out.println("buffer filter lal");
-					System.out.println(responseBuffer);
 					//close everything
 					socketClient.close();
 				}
@@ -87,9 +76,26 @@ public class NetNinny {
 		}).start();
 	}
 	
+	public static String getHostName(String header) {
+		String host = null;
+		if(header.contains("http")) {
+			String[] test = header.split("/");
+			String almostHost = test[2];
+			host = almostHost.split(":")[0];		
+		} else {
+			String new1 = header.split(" ")[1];
+			String new2 = new1.split("/")[0];
+			host = new2.split(":")[0];
+		}
+		return host;
+	}
+	
 	public static void filterResponse(String response) {
 		
 	}
 	
+	public static boolean isBlackList(String word) {
+		return true;
+	}
 	
 }
