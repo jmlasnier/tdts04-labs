@@ -7,17 +7,7 @@ import java.util.Scanner;
 public class ProxyServer {
 
 	public static void main(String[] args) {
-		Scanner sc = new Scanner(System.in);
-		System.out.println("Enter host:");
-		String host = sc.nextLine();
-		System.out.println("\nEnter localport:");
-		int localport = sc.nextInt();
-		try {
-			runServer(host, localport);
-		} catch (IOException e) {
-			System.out.println(e);
-		}
-		sc.close();
+		
 	}
 	
 	public static void runServer(String host, int localport) throws IOException{

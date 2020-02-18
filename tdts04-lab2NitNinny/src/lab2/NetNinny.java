@@ -39,22 +39,13 @@ public class NetNinny {
 					String[] splittedInput = inputRequest.split("\n");
 
 					String portNumber = PORT;
-					String host = new String();
+					
 					
 					String header = splittedInput[0];
-
+					String host = findHost(header);
 					System.out.println("header:");
 					System.out.println(header);
 					
-					if(header.contains("http")) {
-						String[] test = header.split("/");
-						String almostHost = test[2];
-						host = almostHost.split(":")[0];		
-					} else {
-						String new1 = header.split(" ")[1];
-						String new2 = new1.split("/")[0];
-						host = new2.split(":")[0];
-					}
 					System.out.println("host: " + host);
 					System.out.println("port: " + portNumber);
 
@@ -88,6 +79,23 @@ public class NetNinny {
 				}
 			}
 		}).start();
-	}	
+	}
+	
+	public static String findHost(String header) {
+		String host = header;
+		int start = host.indexOf("://");
+		if (start != -1) {
+			start += 3;
+		} else {
+			start = 4;
+		}
+		host = host.substring(start);
+		int end = host.indexOf(':');
+		if (end == -1) {
+			end = (host.indexOf('/') != -1) ? host.indexOf('/') : host.length();
+		}
+		host = host.substring(0, end);
+		return host;
+	}
 	
 }
