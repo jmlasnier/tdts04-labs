@@ -2,6 +2,8 @@ package lab2;
 import java.net.*;
 import java.io.*;
 
+//http://requestbin.net/r/1gtru6d1
+
 public class NetNinny {
 	final static int BUFFER_SIZE = 65536;
 	final static String PORT = "80";
@@ -13,7 +15,9 @@ public class NetNinny {
 			while(true) {
 				Socket socketClient = proxy.accept();
 				proxy_server(socketClient);
+				
 			}
+			
 			
 		}
 		catch(IOException e) {
@@ -64,16 +68,19 @@ public class NetNinny {
 					byte[] responseBuffer = new byte[BUFFER_SIZE];
 
 					InputStream inputWebResponse = socketClient.getInputStream();
-					input.read(responseBuffer);
+					inputWebResponse.read(responseBuffer);
 					String inputResponse = new String(requestBuffer);
 
 					System.out.println("response:");
 					System.out.println(inputResponse);
 					System.out.println("succes!!");
 					
-					
-					
 					//send response to browser
+					
+					OutputStream serverOutputStream = client.getOutputStream();
+					serverOutputStream.write(responseBuffer);
+					
+					//close everything
 					socketClient.close();
 				}
 				catch(IOException e) {
