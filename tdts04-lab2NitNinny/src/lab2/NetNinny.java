@@ -56,10 +56,25 @@ public class NetNinny {
 
 					//send request to web server
 					
-					//handle response form web server
+					Socket socketClient = new Socket(host, Integer.parseInt(portNumber));
+					OutputStream out = socketClient.getOutputStream();
+					out.write(requestBuffer);
+					//handle response from web server
+
+					byte[] responseBuffer = new byte[BUFFER_SIZE];
+
+					InputStream inputWebResponse = socketClient.getInputStream();
+					input.read(responseBuffer);
+					String inputResponse = new String(requestBuffer);
+
+					System.out.println("response:");
+					System.out.println(inputResponse);
+					System.out.println("succes!!");
+					
+					
 					
 					//send response to browser
-					
+					socketClient.close();
 				}
 				catch(IOException e) {
 					System.err.println(e);
