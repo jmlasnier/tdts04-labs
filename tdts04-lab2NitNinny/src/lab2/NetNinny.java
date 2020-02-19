@@ -8,10 +8,9 @@ import java.text.SimpleDateFormat;
 //http://requestbin.net/r/1gtru6d1
 //http://iberianodonataucm.myspecies.info/
 //http://diptera.myspecies.info/
-//https://www.ida.liu.se/~TDTS04/labs/2011/ass2/goodtest1.txt
-//https://www.ida.liu.se/~TDTS04/labs/2011/ass2/goodtest2.html
-//https://www.ida.liu.se/~TDTS04/labs/2011/ass2/SpongeBob.html
-//https://www.ida.liu.se/~TDTS04/labs/2011/ass2/badtest1.html
+//http://zebroid.ida.liu.se/goodtest2.html
+//http://zebroid.ida.liu.se/SpongeBob.html
+//http://zebroid.ida.liu.se/badtest1.html
 
 public class NetNinny {
 	final static int BUFFER_SIZE = 65536;
@@ -79,14 +78,28 @@ public class NetNinny {
 					//handle response from web server
 					byte[] responseBuffer = new byte[BUFFER_SIZE];
 					
+//					byte[] fullResponseBuffer = new byte[]
+					
 					InputStream inputWebResponse = socketClient.getInputStream();
 					inputWebResponse.read(responseBuffer);
 					String inputResponse = new String(responseBuffer);
 
-//					System.out.println("RESPONSE:");
-//					System.out.println(inputResponse);
+					System.out.println("RESPONSE:");
+					System.out.println(inputResponse);
 					
 					//filter
+					if (inputResponse.contains("Content-Type: text")) {
+						if (isBlackListed(inputResponse)) {
+	                        String redirect = getErrorPage();
+	                        System.out.println(new String(redirect.getBytes()));
+
+	                        OutputStream clientOutputStream = socketServer.getOutputStream();
+	                        clientOutputStream.write(redirect.getBytes());
+	                        socketServer.close();
+	                        return;  
+						}
+					}
+					
 					
 						
 					//send response to browser
@@ -104,16 +117,19 @@ public class NetNinny {
 	}
 	
 	public static String getHostName(String header) {
-		String host = null;
-		if(header.contains("http")) {
-			String[] test = header.split("/");
-			String almostHost = test[2];
-			host = almostHost.split(":")[0];		
+		String host = header;
+		int start = host.indexOf("://");
+		if (start != -1) {
+			start += 3;
 		} else {
-			String new1 = header.split(" ")[1];
-			String new2 = new1.split("/")[0];
-			host = new2.split(":")[0];
+			start = 4;
 		}
+		host = host.substring(start);
+		int end = host.indexOf(':');
+		if (end == -1) {
+			end = (host.indexOf('/') != -1) ? host.indexOf('/') : host.length();
+		}
+		host = host.substring(0, end);
 		return host;
 	}
 	
@@ -125,7 +141,6 @@ public class NetNinny {
 	}
 	
 	public static String getErrorPage() {
-
         DateFormat dateFormat = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss");
         Date date = new Date();
         String dateText = dateFormat.format(date) + " GMT\n";
