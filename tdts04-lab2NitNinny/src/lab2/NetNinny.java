@@ -1,36 +1,47 @@
 package lab2;
-import java.net.*;
+import java.net.*; 
 import java.io.*;
+import java.util.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 //http://requestbin.net/r/1gtru6d1
+//http://iberianodonataucm.myspecies.info/
+//http://diptera.myspecies.info/
+//http://zebroid.ida.liu.se/goodtest2.html
+//http://zebroid.ida.liu.se/SpongeBob.html
+//http://zebroid.ida.liu.se/badtest1.html
 
 public class NetNinny {
 	final static int BUFFER_SIZE = 65536;
-	final static String PORT = "80";
+	final static int PORT = 80;
+    final static String ERROR_PAGE = "HTTP/1.1 301 Moved Permanently\nContent-Length: 145\nLocation: http://zebroid.ida.liu.se/error1.html\nConnection: keep-alive\nContent-Type: text/html";
+	final static String[] blackList = {"odonata", "SpongeBob"};
+	
+	boolean legalRequest = true;
+	
 	
 	public static void main(String[] args){
 		try {
 			ServerSocket proxy = new ServerSocket(2006);
-			
 			while(true) {
-				Socket socketClient = proxy.accept();
-				proxy_server(socketClient);
-				
+				Socket socketServer = proxy.accept();
+				proxy_server(socketServer);
 			}
-			
-			
 		}
 		catch(IOException e) {
 			System.err.println(e);
 		}
 	}
 	
-	public static void proxy_server(Socket client) {
+	public static void proxy_server(Socket socketServer) {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
 					byte[] requestBuffer = new byte[BUFFER_SIZE];
-					InputStream input = client.getInputStream();
+					
+					//receive request from browser
+					InputStream input = socketServer.getInputStream();
 					input.read(requestBuffer);
 					String inputRequest = new String(requestBuffer);
 					System.out.println(inputRequest);
@@ -39,36 +50,67 @@ public class NetNinny {
 					String[] splittedInput = inputRequest.split("\n");
 
 					String portNumber = PORT;
+					String host = new String();
+					String header = inputRequest.split("\n")[0];
 					
-					
-					String header = splittedInput[0];
-					String host = findHost(header);
-					System.out.println("header:");
-					System.out.println(header);
-					
-					System.out.println("host: " + host);
-					System.out.println("port: " + portNumber);
+//					System.out.println("input: ");
+//					System.out.println(input);
+////					
+//					System.out.println("inputRequest: ");
+//					System.out.println(inputRequest);
+//					
+//					System.out.println("header: ");
+//					System.out.println(header);
+//					
+					//if illegal url, redirect and send error page to browser
+					if (isBlackListed(header)) {
+                        String redirect = getErrorPage();
+                        System.out.println(new String(redirect.getBytes()));
 
-					//send request to web server
+                        OutputStream clientOutputStream = socketServer.getOutputStream();
+                        clientOutputStream.write(redirect.getBytes());
+                        socketServer.close();
+                        return;  
+					}
 					
-					Socket socketClient = new Socket(host, Integer.parseInt(portNumber));
+					//string manip to get port number and host name
+					
+					String host = getHostName(header);				
+					
+					//send request to web server
+					Socket socketClient = new Socket(host, PORT);
 					OutputStream out = socketClient.getOutputStream();
 					out.write(requestBuffer);
+					
 					//handle response from web server
-
 					byte[] responseBuffer = new byte[BUFFER_SIZE];
-
+					
+//					byte[] fullResponseBuffer = new byte[]
+					
 					InputStream inputWebResponse = socketClient.getInputStream();
 					inputWebResponse.read(responseBuffer);
-					String inputResponse = new String(requestBuffer);
+					String inputResponse = new String(responseBuffer);
 
-					System.out.println("response:");
+					System.out.println("RESPONSE:");
 					System.out.println(inputResponse);
-					System.out.println("succes!!");
 					
+					//filter
+					if (inputResponse.contains("Content-Type: text")) {
+						if (isBlackListed(inputResponse)) {
+	                        String redirect = getErrorPage();
+	                        System.out.println(new String(redirect.getBytes()));
+
+	                        OutputStream clientOutputStream = socketServer.getOutputStream();
+	                        clientOutputStream.write(redirect.getBytes());
+	                        socketServer.close();
+	                        return;  
+						}
+					}
+					
+					
+						
 					//send response to browser
-					
-					OutputStream serverOutputStream = client.getOutputStream();
+					OutputStream serverOutputStream = socketServer.getOutputStream();
 					serverOutputStream.write(responseBuffer);
 					
 					//close everything
@@ -81,7 +123,7 @@ public class NetNinny {
 		}).start();
 	}
 	
-	public static String findHost(String header) {
+	public static String getHostName(String header) {
 		String host = header;
 		int start = host.indexOf("://");
 		if (start != -1) {
@@ -98,4 +140,20 @@ public class NetNinny {
 		return host;
 	}
 	
+	public static boolean isBlackListed(String request ) {
+		for (String badWord: blackList) {
+			if (request.contains(badWord)) return true;
+		}
+		return false;
+	}
+	
+	public static String getErrorPage() {
+        DateFormat dateFormat = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss");
+        Date date = new Date();
+        String dateText = dateFormat.format(date) + " GMT\n";
+        dateText = dateText.replace(".", "");
+        return ERROR_PAGE + "\nDate: " + dateText;
+	}
+
+
 }
