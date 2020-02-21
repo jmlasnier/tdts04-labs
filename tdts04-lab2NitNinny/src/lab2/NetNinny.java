@@ -16,7 +16,7 @@ public class NetNinny {
 	final static int BUFFER_SIZE = 1024;
 	final static int PORT = 80;
     final static String ERROR_PAGE = "HTTP/1.1 301 Moved Permanently\nContent-Length: 145\nLocation: http://zebroid.ida.liu.se/error1.html\nConnection: keep-alive\nContent-Type: text/html";
-	final static String[] blackList = {"odonata", "SpongeBob"};
+	final static String[] blackList = {"odonata", "SpongeBob", "Britney Spears", "Paris Hilton"};
 	
 	boolean legalRequest = true;
 	
