@@ -44,13 +44,6 @@ public class NetNinny {
 					InputStream input = socketServer.getInputStream();
 					input.read(requestBuffer);
 					String inputRequest = new String(requestBuffer);
-					System.out.println(inputRequest);
-
-					//get port number and host name
-					String[] splittedInput = inputRequest.split("\n");
-
-					String portNumber = PORT;
-					String host = new String();
 					String header = inputRequest.split("\n")[0];
 					
 //					System.out.println("input: ");
