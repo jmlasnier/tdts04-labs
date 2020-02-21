@@ -22,8 +22,17 @@ public class NetNinny {
 	
 	
 	public static void main(String[] args){
+		Scanner sc = new Scanner(System.in);
 		try {
-			ServerSocket proxy = new ServerSocket(2006);
+			int portNumber = 0;
+			while (portNumber < 1024) {
+				System.out.println("Enter port number (must be above 1024): ");
+				portNumber = sc.nextInt();
+				if (portNumber < 1024) {
+					System.out.println("Port number must be above 1024!");
+				}
+			}
+			ServerSocket proxy = new ServerSocket(portNumber);
 			while(true) {
 				Socket socketServer = proxy.accept();
 				proxy_server(socketServer);
