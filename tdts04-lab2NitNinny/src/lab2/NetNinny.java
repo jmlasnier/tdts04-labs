@@ -26,6 +26,7 @@ public class NetNinny {
 		try {
 			int portNumber = 0;
 			while (portNumber < 1024) {
+				// FEATURE 7: User manually enters port number
 				System.out.println("Enter port number (must be above 1024): ");
 				portNumber = sc.nextInt();
 				if (portNumber < 1024) {
@@ -49,21 +50,13 @@ public class NetNinny {
 				try {
 					byte[] requestBuffer = new byte[65536];
 					
-					//receive request from browser
+					
+					// receive request from browser
 					InputStream input = socketServer.getInputStream();
 					input.read(requestBuffer);
 					String inputRequest = new String(requestBuffer);
 					String header = inputRequest.split("\n")[0];
-					
-//					System.out.println("input: ");
-//					System.out.println(input);
-////					
-//					System.out.println("inputRequest: ");
-//					System.out.println(inputRequest);
-//					
-//					System.out.println("header: ");
-//					System.out.println(header);
-//					
+										
 					//if illegal url, redirect and send error page to browser
 					if (isBlackListed(header)) {
                         String redirect = getErrorPage();
@@ -109,7 +102,9 @@ public class NetNinny {
 					
 					
 					//filter incoming data
+					// FEATURE 7: Only searches text-based content for words
 					if (fullResponseBuffer.contains("Content-Type: text")) {
+						// FEATURE 3: Filtering
 						if (isBlackListed(fullResponseBuffer)) {
 	                        String redirect = getErrorPage();
 	                        System.out.println(new String(redirect.getBytes()));
