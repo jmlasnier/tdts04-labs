@@ -13,7 +13,7 @@ import java.text.SimpleDateFormat;
 //http://zebroid.ida.liu.se/badtest1.html
 
 public class NetNinny {
-	final static int BUFFER_SIZE = 65536;
+	final static int BUFFER_SIZE = 1024;
 	final static int PORT = 80;
     final static String ERROR_PAGE = "HTTP/1.1 301 Moved Permanently\nContent-Length: 145\nLocation: http://zebroid.ida.liu.se/error1.html\nConnection: keep-alive\nContent-Type: text/html";
 	final static String[] blackList = {"odonata", "SpongeBob"};
@@ -38,7 +38,7 @@ public class NetNinny {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					byte[] requestBuffer = new byte[BUFFER_SIZE];
+					byte[] requestBuffer = new byte[65536];
 					
 					//receive request from browser
 					InputStream input = socketServer.getInputStream();
@@ -75,21 +75,33 @@ public class NetNinny {
 					OutputStream out = socketClient.getOutputStream();
 					out.write(requestBuffer);
 					
+					
 					//handle response from web server
 					byte[] responseBuffer = new byte[BUFFER_SIZE];
 					
-//					byte[] fullResponseBuffer = new byte[]
-					
+//					String fullResponseBuffer = "";
 					InputStream inputWebResponse = socketClient.getInputStream();
 					inputWebResponse.read(responseBuffer);
-					String inputResponse = new String(responseBuffer);
+					String fullResponseBuffer = new String(responseBuffer);
+					
+//					while(true) {
+//						if(responseBuffer[0] != '\u0000') {
+//							fullResponseBuffer += new String(responseBuffer);
+//						}
+//						else {
+//							break;
+//						}
+//					}
+//					String inputResponse = new String(responseBuffer);
 
 					System.out.println("RESPONSE:");
-					System.out.println(inputResponse);
+					System.out.println(fullResponseBuffer);
 					
-					//filter
-					if (inputResponse.contains("Content-Type: text")) {
-						if (isBlackListed(inputResponse)) {
+					
+					
+					//filter incoming data
+					if (fullResponseBuffer.contains("Content-Type: text")) {
+						if (isBlackListed(fullResponseBuffer)) {
 	                        String redirect = getErrorPage();
 	                        System.out.println(new String(redirect.getBytes()));
 
@@ -99,7 +111,6 @@ public class NetNinny {
 	                        return;  
 						}
 					}
-					
 					
 						
 					//send response to browser
