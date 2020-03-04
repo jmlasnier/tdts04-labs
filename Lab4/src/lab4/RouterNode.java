@@ -33,12 +33,38 @@ public class RouterNode {
 
   //--------------------------------------------------
   public void printDistanceTable() {
-	  myGUI.println("Current table for " + myID +
-			"  at time " + sim.getClocktime());
+	  
+	  String chartTop = "    dst |";
+	  String horizBars = "---------";
+	  for (int i = 0; i < costs.length; i++) {
+		  chartTop += ("    " + i);
+		  horizBars += "-----";
+		  
+	  }
+	  
+	  String nbrLines[] = new String[costs.length - 1]; // TO IMPLEMENT LATER
+	  String costLine = " cost   |";
+	  String routeLine = " route  |"; // TO IMPLEMENT AFTER ALGORITHM
+	  for (int i = 0; i < costs.length; i++) {
+		  costLine += "  " + String.format("%3d", costs[i]);
+		  
+	  }
+	  myGUI.println("Current table for " + myID + "  at time " + sim.getClocktime());
+	  myGUI.println("\nDistancetable:");
+	  myGUI.println(chartTop);
+	  myGUI.println(horizBars);
+	  myGUI.println();
+	  
+	  myGUI.println("\nOur distance vector and routes:");
+	  myGUI.println(chartTop);
+	  myGUI.println(horizBars);
+	  myGUI.println(costLine);
+	  
   }
 
   //--------------------------------------------------
   public void updateLinkCost(int dest, int newcost) {
+	  costs[dest] = newcost;
   }
 
 }
