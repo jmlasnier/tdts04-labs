@@ -1,5 +1,8 @@
 package lab4;
 
+import java.util.Arrays;
+import java.util.HashMap;
+
 import javax.swing.*;        
 
 public class RouterNode {
@@ -7,18 +10,30 @@ public class RouterNode {
   private GuiTextArea myGUI;
   private RouterSimulator sim;
   private int[] costs = new int[RouterSimulator.NUM_NODES];
+  private int[][] distances = new int[RouterSimulator.NUM_NODES][RouterSimulator.NUM_NODES];
+  private HashMap<Integer, Integer> route = new HashMap<>();
+  private boolean reversePoison = false;
 
   //--------------------------------------------------
   public RouterNode(int ID, RouterSimulator routerSimulator, int[] costs) {
     myID = ID;
     this.sim = routerSimulator;
-    for (int i = 0; i < costs.length; i++) {
-    	costs[i] = (i == myID) ? 0 : RouterSimulator.INFINITY;
+    myGUI = new GuiTextArea("  Output window for Router #"+ ID + "  ");
+    System.arraycopy(costs, 0, this.costs, 0, RouterSimulator.NUM_NODES);
+    
+    for (int i[] : distances) {
+    	Arrays.fill(i, RouterSimulator.INFINITY);
     }
     
-    myGUI = new GuiTextArea("  Output window for Router #"+ ID + "  ");
-
-    System.arraycopy(costs, 0, this.costs, 0, RouterSimulator.NUM_NODES);
+    distances[myID][myID] = 0;
+    
+    for (int n = 0; n < costs.length; n++) {
+    	distances[myID][n] = costs[n];
+    	if (costs[n] != RouterSimulator.INFINITY && n != myID) {
+    		route.put(n, n);
+    	}
+    }
+    
     printDistanceTable();
   }
 
@@ -31,7 +46,6 @@ public class RouterNode {
   //--------------------------------------------------
   private void sendUpdate(RouterPacket pkt) {
     sim.toLayer2(pkt);
-    printDistanceTable();
   }
   
 
