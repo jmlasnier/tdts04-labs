@@ -13,10 +13,10 @@ public class RouterNode {
     myID = ID;
     this.sim = routerSimulator;
     for (int i = 0; i < costs.length; i++) {
-    	costs[i] = RouterSimulator.INFINITY;
+    	costs[i] = (i == myID) ? 0 : RouterSimulator.INFINITY;
     }
     
-    myGUI =new GuiTextArea("  Output window for Router #"+ ID + "  ");
+    myGUI = new GuiTextArea("  Output window for Router #"+ ID + "  ");
 
     System.arraycopy(costs, 0, this.costs, 0, RouterSimulator.NUM_NODES);
     printDistanceTable();
@@ -42,6 +42,7 @@ public class RouterNode {
 	  String horizBars = "---------";
 	  
 	  String nbrLines[] = new String[costs.length - 1]; // TO IMPLEMENT LATER
+	  String nbrLinesTotal = "";
 	  String costLine = " cost   |";
 	  String routeLine = " route  |"; // TO IMPLEMENT AFTER ALGORITHM
 	  int n = 0;
@@ -54,6 +55,7 @@ public class RouterNode {
 			  for (int j = 0; j < costs.length; j++) {
 				  nbrLines[n] += "  " + String.format("%3d", costs[j]);
 			  }
+			  nbrLinesTotal += (nbrLines[n] + "\n");
 			  n++;
 		  }
 	  }
@@ -61,7 +63,7 @@ public class RouterNode {
 	  myGUI.println("\nDistancetable:");
 	  myGUI.println(chartTop);
 	  myGUI.println(horizBars);
-	  myGUI.println();
+	  myGUI.println(nbrLinesTotal);
 	  
 	  myGUI.println("\nOur distance vector and routes:");
 	  myGUI.println(chartTop);
