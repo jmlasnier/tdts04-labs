@@ -26,8 +26,11 @@ public class RouterNode {
     distances[myID][myID] = 0;
     
     System.arraycopy(costs, 0, distances[myID], 0, RouterSimulator.NUM_NODES);
-    System.arraycopy(costs, 0, route, 0, RouterSimulator.NUM_NODES);
+    for (int i = 0; i < num_nodes; i++) {
+    	route[i] = (costs[i] != RouterSimulator.INFINITY) ? i : RouterSimulator.INFINITY;    	
+    }
     
+    broadcast();
     
     printDistanceTable();
   }
