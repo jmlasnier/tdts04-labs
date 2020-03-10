@@ -1,17 +1,15 @@
 package lab4;
 
-import java.util.Arrays;
-import java.util.HashMap;
-
-import javax.swing.*;        
+import java.util.Arrays;       
 
 public class RouterNode {
   private int myID;
   private GuiTextArea myGUI;
   private RouterSimulator sim;
+  private int num_nodes = RouterSimulator.NUM_NODES;
   private int[] costs = new int[RouterSimulator.NUM_NODES];
   private int[][] distances = new int[RouterSimulator.NUM_NODES][RouterSimulator.NUM_NODES];
-  private HashMap<Integer, Integer> route = new HashMap<>();
+  private int[] route = new int[RouterSimulator.NUM_NODES];
   private boolean reversePoison = false;
 
   //--------------------------------------------------
@@ -27,18 +25,51 @@ public class RouterNode {
     
     distances[myID][myID] = 0;
     
-    for (int n = 0; n < costs.length; n++) {
-    	distances[myID][n] = costs[n];
-    	if (costs[n] != RouterSimulator.INFINITY && n != myID) {
-    		route.put(n, n);
-    	}
-    }
+    System.arraycopy(costs, 0, distances[myID], 0, RouterSimulator.NUM_NODES);
+    System.arraycopy(costs, 0, route, 0, RouterSimulator.NUM_NODES);
+    
     
     printDistanceTable();
   }
 
   //--------------------------------------------------
   public void recvUpdate(RouterPacket pkt) {
+	  if (!distances[pkt.sourceid].equals(pkt.mincost)) {
+		  System.arraycopy(pkt.mincost.clone(), 0, distances[pkt.sourceid], 
+				  0, RouterSimulator.NUM_NODES);
+		  boolean change = false;
+		  for (int n = 0; n < num_nodes; n++) {
+			  if (n == myID) {
+				  continue;
+			  }
+			  
+			  int newCost = distances[route[n]][n] + distances[myID][route[n]];
+			  
+			  change = (distances[myID][n] != newCost);
+			  distances[myID][n] = newCost;
+			  
+			  if (distances[myID][n] > costs[n]) {
+				  distances[myID][n] = costs[n];
+				  route[n] = n;
+				  change = true;
+			  }
+				
+			  for (int i = 0; i < num_nodes; i++) {
+				  int routeCost = distances[myID][n] + 
+						  distances[n][i];
+				  if (distances[myID][i] > routeCost) {
+					  distances[myID][i] = routeCost;
+					  route[i] = route[n];
+					  change = true;
+				  }
+				  
+			  }
+			  if (change) {
+				  //asdf
+			  }
+		  }
+	  }
+	  
 	  printDistanceTable();
   }
   
