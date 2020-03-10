@@ -10,7 +10,7 @@ public class RouterNode {
   private int[] costs = new int[RouterSimulator.NUM_NODES];
   private int[][] distances = new int[RouterSimulator.NUM_NODES][RouterSimulator.NUM_NODES];
   private int[] route = new int[RouterSimulator.NUM_NODES];
-  private boolean reversePoison = false;
+  private boolean poisonReverse = false;
 
   //--------------------------------------------------
   public RouterNode(int ID, RouterSimulator routerSimulator, int[] costs) {
@@ -37,8 +37,10 @@ public class RouterNode {
 	  if (!distances[pkt.sourceid].equals(pkt.mincost)) {
 		  System.arraycopy(pkt.mincost.clone(), 0, distances[pkt.sourceid], 
 				  0, RouterSimulator.NUM_NODES);
-		  boolean change = false;
+		  boolean change;
 		  for (int n = 0; n < num_nodes; n++) {
+			  change = false;
+			  
 			  if (n == myID) {
 				  continue;
 			  }
@@ -46,26 +48,10 @@ public class RouterNode {
 			  int newCost = distances[route[n]][n] + distances[myID][route[n]];
 			  
 			  change = (distances[myID][n] != newCost);
-			  distances[myID][n] = newCost;
+			  distances[myID][n] = newCost;			  
 			  
-			  if (distances[myID][n] > costs[n]) {
-				  distances[myID][n] = costs[n];
-				  route[n] = n;
-				  change = true;
-			  }
-				
-			  for (int i = 0; i < num_nodes; i++) {
-				  int routeCost = distances[myID][n] + 
-						  distances[n][i];
-				  if (distances[myID][i] > routeCost) {
-					  distances[myID][i] = routeCost;
-					  route[i] = route[n];
-					  change = true;
-				  }
-				  
-			  }
-			  if (change) {
-				  //asdf
+			  if (findNewRoute(n) || change) {
+				  broadcast();
 			  }
 		  }
 	  }
@@ -76,8 +62,63 @@ public class RouterNode {
 
   //--------------------------------------------------
   private void sendUpdate(RouterPacket pkt) {
-    sim.toLayer2(pkt);
+    
+	  if (poisonReverse) {
+		  for (int i = 0; i < num_nodes; i++) {
+			  if (distances[myID][i] == pkt.destid) {
+				  pkt.mincost[i] = RouterSimulator.INFINITY;
+			  }
+		  }
+	  }
+	  sim.toLayer2(pkt);
   }
+  
+  private void broadcast() {
+	  for (int i = 0; i < num_nodes; i++) {
+		  if (costs[i] != myID && i != myID) {
+			  sendUpdate(new RouterPacket(myID, i, distances[myID]));
+		  }
+	  }
+  }
+  
+//--------------------------------------------------
+  public void updateLinkCost(int dest, int newcost) {
+	  costs[dest] = newcost;
+	  System.out.println("Link cost for route " + myID + "->" + dest + "=" + newcost);
+	  
+	  if (route[dest] == dest) {
+		  distances[myID][dest] = newcost;
+	  }
+	  
+	  findNewRoute(dest);
+	  
+	  
+	  
+  }
+  
+  private boolean findNewRoute(int dest) {
+	  boolean change = false;
+	  
+	  if (distances[myID][dest] > costs[dest]) {
+		  distances[myID][dest] = costs[dest];
+		  route[dest] = dest;
+		  change = true;
+	  }
+		
+	  for (int i = 0; i < num_nodes; i++) {
+		  int routeCost = distances[myID][dest] + 
+				  distances[dest][i];
+		  if (distances[myID][i] > routeCost) {
+			  distances[myID][i] = routeCost;
+			  route[i] = route[dest];
+			  change = true;
+		  }
+		  
+	  }
+	  
+	  return change;
+  }
+
   
 
   //--------------------------------------------------
@@ -93,12 +134,13 @@ public class RouterNode {
 	  int n = 0;
 	  for (int i = 0; i < costs.length; i++) {
 		  costLine += "  " + String.format("%3d", costs[i]);
+		  routeLine += "  " + String.format("%3d", route[i]);
 		  chartTop += ("    " + i);
 		  horizBars += "-----";
 		  if (i != myID) {
 			  nbrLines[n] = " nbr  " + n + "_|";
 			  for (int j = 0; j < costs.length; j++) {
-				  nbrLines[n] += "  " + String.format("%3d", costs[j]);
+				  nbrLines[n] += "  " + String.format("%3d", distances[i][j]);
 			  }
 			  nbrLinesTotal += (nbrLines[n] + "\n");
 			  n++;
@@ -114,12 +156,9 @@ public class RouterNode {
 	  myGUI.println(chartTop);
 	  myGUI.println(horizBars);
 	  myGUI.println(costLine);
+	  myGUI.println(routeLine);
 	  
   }
 
-  //--------------------------------------------------
-  public void updateLinkCost(int dest, int newcost) {
-	  costs[dest] = newcost;
-  }
-
+  
 }
